@@ -79,7 +79,7 @@ function hideLoading() {
 const diveLinker_index = new DiveLinker("index");
 
 // 設定全域變數
-let gameover;
+let gameover,input_mouse_level=3;
 
 //(1)載入完成
 window.onload = function () {
@@ -106,6 +106,7 @@ function enterstart() {
         // 更新全域變數
 
         gameover = diveLinker_index.getAttr("869d515083374fb88f1e0bd1a21709c7");
+        diveLinker_index.setInput("dc2218204e134da59a1ce8c8f7eb074b", input_mouse_level) ;
 
         console.log(`gameover=${gameover}`);
 
