@@ -14,7 +14,7 @@ async function checkBackend() {
       appendMessage("系統", "⚠️ 後端狀態異常");
     }
   } catch (err) {
-    appendMessage("系統", "❌ 無法連線後端：" + err.message);
+    appendMessage("系統", "❌ 無法連線後端123：" + err.message);
   }
 }
 
