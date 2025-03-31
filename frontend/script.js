@@ -79,7 +79,7 @@ function hideLoading() {
 const diveLinker_index = new DiveLinker("index");
 
 // 設定全域變數
-let over;
+let gameover;
 
 //(1)載入完成
 window.onload = function () {
@@ -105,9 +105,9 @@ function enterstart() {
         
         // 更新全域變數
 
-        over = diveLinker_index.getAttr("869d515083374fb88f1e0bd1a21709c7");
+        gameover = diveLinker_index.getAttr("869d515083374fb88f1e0bd1a21709c7");
 
-        console.log(`gameover=${over}`);
+        console.log(`gameover=${gameover}`);
 
         if (gameover === "1" || gameover === 1) {  // 確保 gameover 是數字或字串 "1"
             clearInterval(checkComplete_Interval); // 停止檢查
