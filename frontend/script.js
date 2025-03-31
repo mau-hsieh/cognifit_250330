@@ -1,20 +1,54 @@
+const API_URL = "https://kalemau.synology.me:50443/chatgpt_test/backend/chatgpt.php";
+
+window.onload = () => {
+  checkBackend();
+};
+
+async function checkBackend() {
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+    if (data.status === "準備好了") {
+      appendMessage("系統", "✅ 後端連線成功，準備好了！");
+    } else {
+      appendMessage("系統", "⚠️ 後端狀態異常");
+    }
+  } catch (err) {
+    appendMessage("系統", "❌ 無法連線後端：" + err.message);
+  }
+}
+
 async function sendMessage() {
   const input = document.getElementById("user-input");
-  const message = input.value;
+  const message = input.value.trim();
   if (!message) return;
 
-  appendMessage("You", message);
+  appendMessage("你", message);
   input.value = "";
+  showLoading();
 
-  const response = await fetch("../backend/chatgpt.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: message })
-  });
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: message })
+    });
 
-  const data = await response.json();
-  const reply = data.choices[0].message.content;
-  appendMessage("ChatGPT", reply);
+    const data = await response.json();
+
+    if (data.error) {
+      appendMessage("系統", "❌ 錯誤：" + data.error);
+      console.error("後端錯誤：", data);
+    } else {
+      const reply = data.choices?.[0]?.message?.content || "⚠️ 無回應";
+      appendMessage("ChatGPT", reply);
+    }
+  } catch (err) {
+    appendMessage("系統", "❌ 回應錯誤：" + err.message);
+    console.error("fetch 錯誤：", err);
+  } finally {
+    hideLoading();
+  }
 }
 
 function appendMessage(sender, text) {
@@ -25,19 +59,16 @@ function appendMessage(sender, text) {
   box.scrollTop = box.scrollHeight;
 }
 
-// ✅ 新增初始化檢查後端狀態
-async function checkBackend() {
-  try {
-    const response = await fetch("../backend/chatgpt.php");
-    const data = await response.json();
-    if (data.status === "準備好了") {
-      appendMessage("系統", "✅ 後端已啟動，準備好了");
-    } else {
-      appendMessage("系統", "⚠️ 無法確認後端狀態");
-    }
-  } catch (error) {
-    appendMessage("系統", "❌ 後端無法連線或錯誤");
-  }
+function showLoading() {
+  const box = document.getElementById("chat-box");
+  const loading = document.createElement("p");
+  loading.id = "loading";
+  loading.innerHTML = `<em>ChatGPT 思考中...</em>`;
+  box.appendChild(loading);
+  box.scrollTop = box.scrollHeight;
 }
 
-window.onload = checkBackend;
+function hideLoading() {
+  const loading = document.getElementById("loading");
+  if (loading) loading.remove();
+}
