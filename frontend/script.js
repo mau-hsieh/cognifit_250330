@@ -116,7 +116,7 @@ function enterstart() {
             gameover = 0; // 重置 gameover 狀態
             diveLinker_index.setInput("869d515083374fb88f1e0bd1a21709c7", 0) ;
             console.log("遊戲結束，發送結果...");
-            sendGameResults(); // 自動發送遊戲結果
+            //sendGameResults(); // 自動發送遊戲結果
         }
         
     }, 100); // 每 100 毫秒檢查一次
