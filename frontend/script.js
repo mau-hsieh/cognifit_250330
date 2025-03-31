@@ -106,12 +106,15 @@ function enterstart() {
         // 更新全域變數
 
         gameover = diveLinker_index.getAttr("869d515083374fb88f1e0bd1a21709c7");
-        diveLinker_index.setInput("dc2218204e134da59a1ce8c8f7eb074b", input_mouse_level) ;
+        
 
         console.log(`gameover=${gameover}`);
 
         if (gameover === "1" || gameover === 1) {  // 確保 gameover 是數字或字串 "1"
-            clearInterval(checkComplete_Interval); // 停止檢查
+            //clearInterval(checkComplete_Interval); // 停止檢查
+            diveLinker_index.setInput("dc2218204e134da59a1ce8c8f7eb074b", input_mouse_level) ;
+            gameover = 0; // 重置 gameover 狀態
+            diveLinker_index.setInput("869d515083374fb88f1e0bd1a21709c7", 0) ;
             console.log("遊戲結束，發送結果...");
             sendGameResults(); // 自動發送遊戲結果
         }
