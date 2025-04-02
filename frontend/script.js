@@ -45,16 +45,21 @@ async function sendMessage() {
       const reply = data.choices?.[0]?.message?.content || "⚠️ 無回應";
       appendMessage("ChatGPT", reply);
 
-      // 🧠 根據回答內容設定 input_mouse_level
-      if (reply.includes("簡單")) {
+      // 🧠 根據 ChatGPT 回應內容判斷難度等級（0～4）
+      if (reply.includes("非常簡單") || reply.includes("初學")) {
+        input_mouse_level = 0;
+      } else if (reply.includes("簡單")) {
         input_mouse_level = 1;
-      } else if (reply.includes("中等")) {
+      } else if (reply.includes("中等") || reply.includes("普通")) {
         input_mouse_level = 2;
       } else if (reply.includes("困難")) {
         input_mouse_level = 3;
+      } else if (reply.includes("非常困難") || reply.includes("高手")) {
+        input_mouse_level = 4;
       } else {
-        input_mouse_level = 0;
+        input_mouse_level = 0; // 預設
       }
+
 
       console.log("🎯 ChatGPT 指定 mouse_level =", input_mouse_level);
     }
