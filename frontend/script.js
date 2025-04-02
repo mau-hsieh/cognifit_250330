@@ -105,12 +105,12 @@ function checkDiveLinker() {
 function enterstart() {
   setInterval(() => {
     gameover = diveLinker_index.getAttr("869d515083374fb88f1e0bd1a21709c7");
-
+    diveLinker_index.setInput("dc2218204e134da59a1ce8c8f7eb074b", input_mouse_level);
     if (gameover === "1" || gameover === 1) {
       console.log("🎮 遊戲結束，送出 mouse_level =", input_mouse_level);
 
       // 傳送 mouse_level 給遊戲
-      diveLinker_index.setInput("dc2218204e134da59a1ce8c8f7eb074b", input_mouse_level);
+      
 
       // 重置狀態
       gameover = 0;
