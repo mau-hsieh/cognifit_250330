@@ -25,6 +25,8 @@ async function sendMessage() {
   const message = input.value.trim();
   if (!message) return;
 
+  const model = document.getElementById("model-select")?.value || "gpt-3.5-turbo";
+
   appendMessage("你", message);
   input.value = "";
   showLoading();
@@ -33,43 +35,28 @@ async function sendMessage() {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message })
+      body: JSON.stringify({
+        message: message,
+        model: model  // ⬅️ 新增這行
+      })
     });
 
     const data = await response.json();
 
     if (data.error) {
       appendMessage("系統", "❌ 錯誤：" + data.error);
-      console.error("後端錯誤：", data);
     } else {
       const reply = data.choices?.[0]?.message?.content || "⚠️ 無回應";
-      appendMessage("ChatGPT", reply);
-
-      // 🧠 根據 ChatGPT 回應內容判斷難度等級（0～4）
-      if (reply.includes("非常簡單") || reply.includes("初學")) {
-        input_mouse_level = 0;
-      } else if (reply.includes("簡單")) {
-        input_mouse_level = 1;
-      } else if (reply.includes("中等") || reply.includes("普通")) {
-        input_mouse_level = 2;
-      } else if (reply.includes("困難")) {
-        input_mouse_level = 3;
-      } else if (reply.includes("非常困難") || reply.includes("高手")) {
-        input_mouse_level = 4;
-      } else {
-        input_mouse_level = 0; // 預設
-      }
-
-
-      console.log("🎯 ChatGPT 指定 mouse_level =", input_mouse_level);
+      const modelUsed = data.model_used || model;
+      appendMessage("ChatGPT", reply + `<br><small style="color:gray">（模型：${modelUsed}）</small>`);
     }
   } catch (err) {
-    appendMessage("系統", "❌ 回應錯誤：" + err.message);
-    console.error("fetch 錯誤：", err);
+    appendMessage("系統", "❌ 錯誤：" + err.message);
   } finally {
     hideLoading();
   }
 }
+
 
 function appendMessage(sender, text) {
   const box = document.getElementById("chat-box");
