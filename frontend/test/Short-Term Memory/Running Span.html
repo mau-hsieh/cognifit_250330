@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Running Span 雛型遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      padding-top: 50px;
+    }
+    #stimulus {
+      font-size: 64px;
+      margin: 40px;
+    }
+    #message {
+      font-size: 24px;
+      margin: 20px;
+    }
+    #responseInput {
+      font-size: 24px;
+      padding: 5px;
+      width: 200px;
+    }
+    #progressBar {
+      width: 300px;
+      height: 20px;
+      background-color: #ddd;
+      margin: 10px auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #progressFill {
+      height: 100%;
+      background-color: #4caf50;
+      width: 100%;
+      transition: width 1.5s linear;
+    }
+    #sequenceDisplay {
+      font-size: 20px;
+      margin: 10px;
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 20px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Running Span 雛型遊戲</h1>
+  <div id="stimulus">?</div>
+  <div id="progressBar"><div id="progressFill"></div></div>
+  <div id="sequenceDisplay" style="display:none;">序列：</div>
+  <button onclick="startRunningSpan(true)">開始遊戲（顯示序列）</button>
+  <button onclick="startRunningSpan(false)">開始遊戲（隱藏序列）</button>
+  <div id="inputArea" style="display:none;">
+    <p>請輸入你最後看到的幾個字母：</p>
+    <input id="responseInput" type="text" placeholder="例如：D F G" />
+    <button onclick="submitRunningResponse()">送出</button>
+  </div>
+  <div id="message"></div>
+
+  <script>
+    const letters = ["A", "B", "C", "D", "E", "F", "G"];
+    const totalStimuli = 12;
+    const recallLength = 4;
+    let runningSequence = [];
+    let index = 0;
+    let showSequence = false;
+
+    function startRunningSpan(show) {
+      showSequence = show;
+      runningSequence = [];
+      index = 0;
+      document.getElementById("message").textContent = "請記住最後幾個字母";
+      document.getElementById("inputArea").style.display = "none";
+      document.getElementById("sequenceDisplay").style.display = show ? "block" : "none";
+      document.getElementById("sequenceDisplay").textContent = "序列：";
+      presentNext();
+    }
+
+    function presentNext() {
+      if (index >= totalStimuli) {
+        document.getElementById("stimulus").textContent = "✔️";
+        document.getElementById("progressFill").style.width = "0%";
+        document.getElementById("inputArea").style.display = "block";
+        return;
+      }
+      const char = letters[Math.floor(Math.random() * letters.length)];
+      runningSequence.push(char);
+      document.getElementById("stimulus").textContent = char;
+      if (showSequence) {
+        document.getElementById("sequenceDisplay").textContent = "序列：" + runningSequence.join(" ");
+      }
+
+      const fill = document.getElementById("progressFill");
+      fill.style.transition = "none";
+      fill.style.width = "100%";
+      setTimeout(() => {
+        fill.style.transition = "width 1.5s linear";
+        fill.style.width = "0%";
+      }, 50);
+
+      setTimeout(() => {
+        index++;
+        presentNext();
+      }, 1500);
+    }
+
+    function submitRunningResponse() {
+      const response = document.getElementById("responseInput").value.trim().toUpperCase().split(/\s+/);
+      const correct = runningSequence.slice(-recallLength);
+      const isCorrect = JSON.stringify(response) === JSON.stringify(correct);
+      document.getElementById("message").textContent = isCorrect
+        ? `✔️ 正確！你的答案：${response.join(" ")}，正確答案：${correct.join(" ")}`
+        : `❌ 錯誤。你的答案：${response.join(" ")}，正確答案：${correct.join(" ")}`;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Trail Making Test B</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    #gameCanvas {
+      display: block;
+      margin: 20px auto;
+      background: #fff;
+      border: 2px solid #ccc;
+    }
+    #message {
+      font-size: 20px;
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Trail Making Test B 雛形</h1>
+  <canvas id="gameCanvas" width="600" height="600"></canvas>
+  <div id="message">依序點擊 A→1→B→2→C→3...直到完成</div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const message = document.getElementById("message");
+
+    const sequence = ["A", "1", "B", "2", "C", "3", "D", "4", "E", "5"];
+    const points = [];
+    const radius = 25;
+    let currentIndex = 0;
+    let startTime;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function setupPoints() {
+      const positions = [];
+      for (let i = 0; i < sequence.length; i++) {
+        let x, y, valid;
+        do {
+          x = Math.random() * (canvas.width - 2 * radius) + radius;
+          y = Math.random() * (canvas.height - 2 * radius) + radius;
+          valid = positions.every(pos => Math.hypot(pos.x - x, pos.y - y) > 2 * radius + 10);
+        } while (!valid);
+        positions.push({ x, y });
+      }
+      for (let i = 0; i < sequence.length; i++) {
+        points.push({ label: sequence[i], x: positions[i].x, y: positions[i].y, clicked: false });
+      }
+    }
+
+    function drawPoints() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const pt of points) {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = pt.clicked ? "#ccc" : "#4caf50";
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#000";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(pt.label, pt.x, pt.y);
+      }
+    }
+
+    function onClick(e) {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      for (let i = 0; i < points.length; i++) {
+        const pt = points[i];
+        const dx = mouseX - pt.x;
+        const dy = mouseY - pt.y;
+        if (!pt.clicked && Math.sqrt(dx * dx + dy * dy) <= radius) {
+          if (pt.label === sequence[currentIndex]) {
+            pt.clicked = true;
+            drawPoints();
+            currentIndex++;
+            if (currentIndex >= sequence.length) {
+              const timeTaken = Math.round((Date.now() - startTime) / 1000);
+              message.textContent = `完成！耗時 ${timeTaken} 秒`;
+              canvas.removeEventListener("click", onClick);
+            }
+          } else {
+            message.textContent = `錯誤！請依序點擊 ${sequence[currentIndex]}`;
+          }
+          break;
+        }
+      }
+    }
+
+    function startTest() {
+      setupPoints();
+      drawPoints();
+      startTime = Date.now();
+      canvas.addEventListener("click", onClick);
+    }
+
+    startTest();
+  </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Tracking Task 雛型遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    canvas {
+      display: block;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border: 2px solid #ccc;
+    }
+    #message {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+    #progressBar {
+      width: 300px;
+      height: 20px;
+      background-color: #ddd;
+      margin: 10px auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #progressFill {
+      height: 100%;
+      background-color: #4caf50;
+      width: 100%;
+      transition: width linear;
+    }
+    #result {
+      font-size: 20px;
+      margin-top: 20px;
+      color: #333;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tracking Task 雛型遊戲</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <div id="progressBar"><div id="progressFill"></div></div>
+  <button onclick="startTracking()">開始追蹤</button>
+  <div id="message">請用滑鼠追蹤移動目標</div>
+  <div id="result"></div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const progressFill = document.getElementById("progressFill");
+    const resultBox = document.getElementById("result");
+    let target = { x: 300, y: 200, radius: 20, vx: 2, vy: 1.5 };
+    let tracking = false;
+    let score = 0;
+    let totalFrames = 0;
+    let duration = 10 * 1000; // 10秒結束
+    let startTime = null;
+
+    function startTracking() {
+      target.x = Math.random() * 560 + 20;
+      target.y = Math.random() * 360 + 20;
+      score = 0;
+      totalFrames = 0;
+      tracking = true;
+      startTime = Date.now();
+      resultBox.textContent = "";
+      progressFill.style.transition = `width ${duration}ms linear`;
+      progressFill.style.width = "0%";
+      requestAnimationFrame(update);
+    }
+
+    function update() {
+      if (!tracking) return;
+
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= duration) {
+        tracking = false;
+        const finalRate = Math.round((score / totalFrames) * 100);
+        document.getElementById("message").textContent = `完成！追中率：${finalRate}%`;
+        resultBox.textContent = `🎯 結果摘要：共計 ${totalFrames} 幀，成功追中 ${score} 幀，命中率為 ${finalRate}%`;
+        return;
+      }
+
+      // 更新目標位置
+      target.x += target.vx;
+      target.y += target.vy;
+      if (target.x < 20 || target.x > 580) target.vx *= -1;
+      if (target.y < 20 || target.y > 380) target.vy *= -1;
+
+      // 清空並重畫
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "#4caf50";
+      ctx.fill();
+
+      // 計算是否追中
+      canvas.onmousemove = function (e) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const dx = mouseX - target.x;
+        const dy = mouseY - target.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= target.radius) {
+          score++;
+        }
+        totalFrames++;
+        document.getElementById("message").textContent = `追中率：${Math.round((score / totalFrames) * 100)}%`;
+      };
+
+      requestAnimationFrame(update);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>抑制地鼠挑戰</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: sans-serif;
+    }
+    #game-area {
+      display: grid;
+      grid-template-columns: repeat(3, 150px);
+      grid-gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    .hole {
+      width: 150px;
+      height: 150px;
+      border: 2px solid #333;
+      position: relative;
+      background-color: #f0f0f0;
+    }
+    .mole {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      cursor: pointer;
+    }
+    .target { background-color: green; }
+    .non-target { background-color: red; }
+    #score {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>抑制地鼠挑戰</h1>
+  <button onclick="startGame()">開始遊戲</button>
+  <div id="score">分數：0</div>
+  <div id="game-area"></div>
+
+  <script>
+    const gameArea = document.getElementById("game-area");
+    const scoreDisplay = document.getElementById("score");
+    let score = 0;
+    let gameInterval;
+    const totalHoles = 6;
+    let holes = [];
+
+    function startGame() {
+      score = 0;
+      updateScore();
+      createHoles();
+      gameInterval = setInterval(spawnMole, 800);
+      setTimeout(() => clearInterval(gameInterval), 60000); // 60秒後結束
+    }
+
+    function createHoles() {
+      gameArea.innerHTML = "";
+      holes = [];
+      for (let i = 0; i < totalHoles; i++) {
+        const hole = document.createElement("div");
+        hole.className = "hole";
+        gameArea.appendChild(hole);
+        holes.push(hole);
+      }
+    }
+
+    function spawnMole() {
+      // 清除所有地鼠
+      holes.forEach(hole => hole.innerHTML = "");
+
+      const index = Math.floor(Math.random() * totalHoles);
+      const mole = document.createElement("div");
+      const isTarget = Math.random() < 0.6; // 60% 是目標地鼠
+      mole.className = isTarget ? "mole target" : "mole non-target";
+
+      mole.onclick = () => {
+        if (isTarget) score++;
+        else score--;
+        updateScore();
+        mole.remove();
+      };
+
+      holes[index].appendChild(mole);
+
+      setTimeout(() => {
+        if (mole.parentNode) mole.remove();
+      }, 700);
+    }
+
+    function updateScore() {
+      scoreDisplay.textContent = `分數：${score}`;
+    }
+  </script>
+</body>
+</html>

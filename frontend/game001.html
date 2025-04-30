@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ChatGPT PHP Proxy Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- 這裡會自動填入 header -->
+    <div id="header-placeholder"></div>
+
+    <!-- 聊天介面區 -->
+    <div class="input-row">
+        <label for="model-select">模型：</label>
+        <select id="model-select">
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+            <option value="gpt-4">GPT-4</option>
+            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+        </select>
+    </div>
+    <div class="invisible">
+        <div class="section">
+            <h2>ChatGPT 對話區</h2>
+            <div class="chat-container">
+                <div id="chat-box">請開始輸入訊息...</div>
+                <div class="input-row">
+                    <input type="text" id="user-input" placeholder="輸入訊息..." />
+                    <button onclick="sendMessage()">送出</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 遊戲區塊 -->
+    <div class="section">
+        <h2>遊戲測試</h2>
+        <iframe id="iframe_" src="https://dive.nutn.edu.tw/Experiment/kaleTestExperiment5.jsp?eid=33220&record=false"
+            name="index"></iframe>
+    </div>
+
+    <!-- JS -->
+    <script src="https://dive.nutn.edu.tw/Experiment/js/dive.linker.js"></script>
+    <script src="game001.js"></script>
+    <script src="load-components.js"></script>
+</body>
+
+</html>

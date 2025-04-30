@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>反應時間測驗（簡單／選擇）</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 60px;
+      background-color: #f4f4f4;
+    }
+    #stimulus {
+      font-size: 48px;
+      margin: 40px;
+    }
+    #message {
+      font-size: 20px;
+      margin: 20px;
+    }
+    #results {
+      font-size: 18px;
+      color: #333;
+      margin-top: 20px;
+    }
+    button {
+      font-size: 24px;
+      margin: 10px;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>反應時間測驗</h1>
+  <button onclick="startSimpleTask()">開始簡單反應任務</button>
+  <button onclick="startChoiceTask()">開始選擇反應任務</button>
+  <div id="stimulus"></div>
+  <div id="message">請依照指示回應</div>
+  <div id="results"></div>
+
+  <script>
+    const stimulusEl = document.getElementById("stimulus");
+    const messageEl = document.getElementById("message");
+    const resultsEl = document.getElementById("results");
+    let startTime;
+    let currentStimulus;
+    let isWaiting = false;
+    let history = [];
+
+    function startSimpleTask() {
+      messageEl.textContent = "當畫面變成綠色時按空白鍵！";
+      stimulusEl.textContent = "準備...";
+      stimulusEl.style.color = "black";
+      isWaiting = true;
+      setTimeout(() => {
+        stimulusEl.textContent = "●";
+        stimulusEl.style.color = "green";
+        startTime = Date.now();
+        currentStimulus = "green";
+      }, Math.random() * 2000 + 1000);
+    }
+
+    function startChoiceTask() {
+      messageEl.textContent = "看到紅色按 A，藍色按 L 鍵！";
+      stimulusEl.textContent = "準備...";
+      stimulusEl.style.color = "black";
+      isWaiting = true;
+      setTimeout(() => {
+        currentStimulus = Math.random() < 0.5 ? "red" : "blue";
+        stimulusEl.textContent = "●";
+        stimulusEl.style.color = currentStimulus;
+        startTime = Date.now();
+      }, Math.random() * 2000 + 1000);
+    }
+
+    function updateResults() {
+      if (history.length === 0) return;
+      const times = history.map(h => h.rt);
+      const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+      const fastest = Math.min(...times);
+      const slowest = Math.max(...times);
+      resultsEl.innerHTML = `反應次數：${history.length}<br>平均反應時間：${avg} 毫秒<br>最快：${fastest} ms，最慢：${slowest} ms`;
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (!isWaiting) return;
+      const rt = Date.now() - startTime;
+      let correct = false;
+
+      if (currentStimulus === "green" && e.code === "Space") {
+        messageEl.textContent = `✔️ 你的反應時間是 ${rt} 毫秒`;
+        correct = true;
+      } else if (currentStimulus === "red" && e.key.toLowerCase() === "a") {
+        messageEl.textContent = `✔️ 正確（紅色 A），反應時間 ${rt} 毫秒`;
+        correct = true;
+      } else if (currentStimulus === "blue" && e.key.toLowerCase() === "l") {
+        messageEl.textContent = `✔️ 正確（藍色 L），反應時間 ${rt} 毫秒`;
+        correct = true;
+      } else if (["a", "l", " "].includes(e.key.toLowerCase())) {
+        messageEl.textContent = `❌ 錯誤按鍵`;
+      }
+
+      if (correct) {
+        history.push({ stimulus: currentStimulus, rt });
+        updateResults();
+      }
+
+      isWaiting = false;
+    });
+  </script>
+</body>
+</html>

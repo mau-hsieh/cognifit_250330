@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Switching 雛型遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+      padding-top: 50px;
+    }
+    #stimulus {
+      font-size: 64px;
+      margin: 20px;
+    }
+    #taskLabel {
+      font-size: 24px;
+      margin: 10px;
+    }
+    #message {
+      font-size: 20px;
+      margin: 20px;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      margin: 10px;
+    }
+    .response-buttons {
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Task Switching 雛型</h1>
+  <div id="taskLabel">任務將會顯示在這裡</div>
+  <div id="stimulus">?</div>
+  <button onclick="startTest()">開始任務</button>
+  <div class="response-buttons">
+    <button onclick="handleResponse('a')">A（奇數/子音）</button>
+    <button onclick="handleResponse('l')">L（偶數/母音）</button>
+  </div>
+  <div id="message"></div>
+
+  <script>
+    const pairs = [
+      { number: "2", letter: "A" },
+      { number: "3", letter: "E" },
+      { number: "4", letter: "K" },
+      { number: "5", letter: "T" }
+    ];
+
+    const taskTypes = ["數字判斷（奇偶）", "字母判斷（母音/子音）"];
+    let currentTask = "";
+    let currentStimulus = null;
+    let trialIndex = 0;
+    let totalTrials = 10;
+    let results = [];
+
+    function startTest() {
+      results = [];
+      trialIndex = 0;
+      nextTrial();
+    }
+
+    function nextTrial() {
+      if (trialIndex >= totalTrials) {
+        document.getElementById("message").textContent = "任務完成！";
+        document.getElementById("taskLabel").textContent = "";
+        document.getElementById("stimulus").textContent = "";
+        return;
+      }
+
+      currentTask = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+      currentStimulus = pairs[Math.floor(Math.random() * pairs.length)];
+
+      const displayChar = currentTask === "數字判斷（奇偶）" ? currentStimulus.number : currentStimulus.letter;
+      document.getElementById("stimulus").textContent = displayChar;
+      document.getElementById("taskLabel").textContent = `任務：${currentTask}`;
+      document.getElementById("message").textContent = "請回應（點擊或鍵盤 A / L）";
+
+      window.onkeydown = function (e) {
+        const key = e.key.toLowerCase();
+        handleResponse(key);
+      };
+    }
+
+    function handleResponse(key) {
+      let correct = false;
+
+      if (currentTask === "數字判斷（奇偶）") {
+        const isEven = parseInt(currentStimulus.number) % 2 === 0;
+        correct = (isEven && key === "l") || (!isEven && key === "a");
+      } else if (currentTask === "字母判斷（母音/子音）") {
+        const vowels = ["A", "E", "I", "O", "U"];
+        const isVowel = vowels.includes(currentStimulus.letter.toUpperCase());
+        correct = (isVowel && key === "l") || (!isVowel && key === "a");
+      }
+
+      const stimulusChar = currentTask === "數字判斷（奇偶）" ? currentStimulus.number : currentStimulus.letter;
+      results.push({ task: currentTask, stimulus: stimulusChar, key, correct });
+      document.getElementById("message").textContent = correct ? `✔️ 正確 (${stimulusChar})` : `❌ 錯誤 (${stimulusChar})`;
+      trialIndex++;
+      setTimeout(nextTrial, 800);
+    }
+  </script>
+</body>
+</html>

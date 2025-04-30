@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>分數總覽</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="section">
+    <h2>分數總覽</h2>
+
+    <!-- 顯示原始資料 -->
+    <p id="game-time" style="font-weight: bold; font-size: 1.1em;"></p>
+    <p id="game-score" style="font-weight: bold; font-size: 1.1em;"></p>
+
+    <!-- 額外計算指標 -->
+    <p id="reaction-score" style="font-size: 1em; color: #555;"></p>
+    <p id="accuracy-score" style="font-size: 1em; color: #555;"></p>
+    <!-- 公式說明 -->
+    <div style="margin-top: 20px; font-size: 0.95em; background: #f9f9f9; padding: 15px; border-radius: 8px; max-width: 800px;">
+        <h3>📘 計分公式說明：</h3>
+        <p><strong>🎯 Accuracy Score = 0.125 × score</strong><br>
+           ）</p>
+  
+        <p><strong>⚡ Reaction Score = 5 − [5 × (log(time) − log(500)) / (log(3000) − log(500))]</strong><br>
+           （time 單位為毫秒，最佳反應時間為 500ms，最差為 3000ms，分數在 0～5 之間）</p>
+      </div>
+
+  <script src="load-components.js"></script>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const time = parseFloat(urlParams.get("time"));  // 以秒或毫秒為單位
+    const score = parseInt(urlParams.get("score"));
+
+    if (!isNaN(time)) {
+      document.getElementById("game-time").textContent = `🎮 本次遊戲時間：${time} 毫秒`;
+    }
+
+    if (!isNaN(score)) {
+      document.getElementById("game-score").textContent = `⭐ 本次遊戲分數：${score}`;
+    }
+
+    // ✅ 計算 Reaction Score
+    if (!isNaN(time) && time > 0) {
+      const log = Math.log;
+      const minTime = 500;
+      const maxTime = 3000;
+      const reactionScore = 5 - (5 * (log(time) - log(minTime)) / (log(maxTime) - log(minTime)));
+      const boundedScore = Math.max(0, Math.min(5, reactionScore)); // 限定在 0~5 範圍內
+      document.getElementById("reaction-score").textContent =
+        `⚡ 反應時間得分（Reaction Score）：${boundedScore.toFixed(2)}`;
+    }
+
+    // ✅ 計算 Accuracy Score
+    if (!isNaN(score)) {
+      const accuracyScore = 0.125 * score;
+      document.getElementById("accuracy-score").textContent =
+        `🎯 答題正確率得分（Accuracy Score）：${accuracyScore.toFixed(2)}`;
+    }
+  </script>
+</body>
+</html>

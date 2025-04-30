@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>N-back 雛型遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      padding-top: 50px;
+    }
+    #stimulus {
+      font-size: 64px;
+      margin: 40px;
+    }
+    #message {
+      font-size: 24px;
+      margin: 20px;
+    }
+    #progressBar {
+      width: 300px;
+      height: 20px;
+      background-color: #ddd;
+      margin: 10px auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #progressFill {
+      height: 100%;
+      background-color: #4caf50;
+      width: 100%;
+      transition: width 2s linear;
+    }
+    #sequenceDisplay {
+      font-size: 20px;
+      margin: 10px;
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 20px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>N-back 雛型遊戲</h1>
+  <div id="stimulus">?</div>
+  <div id="progressBar"><div id="progressFill"></div></div>
+  <div id="sequenceDisplay" style="display: none;"></div>
+  <button onclick="startGame(true)">開始遊戲（顯示序列）</button>
+  <button onclick="startGame(false)">開始遊戲（隱藏序列）</button>
+  <div>
+    <button onclick="handleResponse(true)">✅ 有重複</button>
+    <button onclick="handleResponse(false)">❌ 無重複</button>
+  </div>
+  <div id="message"></div>
+
+  <script>
+    const letters = ["A", "B", "C", "D", "E", "F", "G"];
+    const n = 2;
+    const totalTrials = 20;
+    let sequence = [];
+    let currentIndex = 0;
+    let responses = [];
+    let isResponding = false;
+    let trialTimeout;
+    let showSequence = false;
+
+    function startGame(show) {
+      showSequence = show;
+      sequence = [];
+      currentIndex = 0;
+      responses = [];
+      document.getElementById("message").textContent = "遊戲開始！請觀察字母是否與前兩個前相同";
+      document.getElementById("sequenceDisplay").style.display = show ? "block" : "none";
+      document.getElementById("sequenceDisplay").textContent = "序列：";
+      nextTrial();
+    }
+
+    function nextTrial() {
+      if (currentIndex >= totalTrials) {
+        const correctCount = responses.filter(r => r.correct).length;
+        document.getElementById("message").textContent = `遊戲結束！正確次數：${correctCount}/${totalTrials}`;
+        document.getElementById("stimulus").textContent = "✔️";
+        document.getElementById("progressFill").style.width = "0%";
+        return;
+      }
+
+      const newChar = letters[Math.floor(Math.random() * letters.length)];
+      sequence.push(newChar);
+      document.getElementById("stimulus").textContent = newChar;
+      if (showSequence) {
+        document.getElementById("sequenceDisplay").textContent = "序列：" + sequence.join(" ");
+      }
+      isResponding = true;
+
+      const fill = document.getElementById("progressFill");
+      fill.style.transition = "none";
+      fill.style.width = "100%";
+      setTimeout(() => {
+        fill.style.transition = "width 2s linear";
+        fill.style.width = "0%";
+      }, 50);
+
+      trialTimeout = setTimeout(() => {
+        isResponding = false;
+        currentIndex++;
+        nextTrial();
+      }, 2000);
+    }
+
+    function handleResponse(isMatch) {
+      if (!isResponding) return;
+
+      const match = currentIndex >= n && sequence[currentIndex] === sequence[currentIndex - n];
+      const correct = isMatch === match;
+
+      responses.push({
+        index: currentIndex,
+        current: sequence[currentIndex],
+        nBack: sequence[currentIndex - n],
+        match,
+        isMatch,
+        correct
+      });
+
+      document.getElementById("message").textContent = correct ? "✔️ 正確" : "❌ 錯誤";
+      isResponding = false;
+      clearTimeout(trialTimeout);
+      setTimeout(() => {
+        currentIndex++;
+        nextTrial();
+      }, 500);
+    }
+  </script>
+</body>
+</html>

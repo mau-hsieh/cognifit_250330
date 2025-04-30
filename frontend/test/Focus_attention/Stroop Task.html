@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Stroop Task 雛型</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 60px;
+      background-color: #f4f4f4;
+    }
+    #stimulus {
+      font-size: 48px;
+      margin: 40px;
+    }
+    #message {
+      font-size: 20px;
+      margin: 20px;
+    }
+    #results {
+      font-size: 18px;
+      color: #333;
+      margin-top: 20px;
+    }
+    #progressBar {
+      width: 300px;
+      height: 20px;
+      background-color: #ddd;
+      margin: 10px auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #progressFill {
+      height: 100%;
+      background-color: #4caf50;
+      width: 100%;
+      transition: width 2s linear;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 8px 12px;
+    }
+    th {
+      background-color: #eee;
+    }
+    button {
+      font-size: 24px;
+      margin: 10px;
+      padding: 10px 20px;
+    }
+    .color-buttons {
+      margin: 20px;
+    }
+    .color-btn {
+      padding: 10px 30px;
+      font-size: 20px;
+      margin: 5px;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    .red { background-color: red; }
+    .blue { background-color: blue; }
+    .green { background-color: green; }
+  </style>
+</head>
+<body>
+  <h1>Stroop Task 雛型</h1>
+  <button onclick="startStroopSequence()">開始 5 次 Stroop 測驗</button>
+  <div id="stimulus"></div>
+  <div id="progressBar"><div id="progressFill"></div></div>
+  <div class="color-buttons">
+    <button class="color-btn red" onclick="handleResponse('a')">紅 (A)</button>
+    <button class="color-btn blue" onclick="handleResponse('l')">藍 (L)</button>
+    <button class="color-btn green" onclick="handleResponse('s')">綠 (S)</button>
+  </div>
+  <div id="message">請按顏色對應鍵：紅 (A)、藍 (L)、綠 (S)</div>
+  <div id="results"></div>
+
+  <script>
+    const stimulusEl = document.getElementById("stimulus");
+    const messageEl = document.getElementById("message");
+    const resultsEl = document.getElementById("results");
+    const progressFill = document.getElementById("progressFill");
+    let startTime;
+    let currentColor;
+    let expectedKey;
+    let currentWord;
+    let isWaiting = false;
+    let history = [];
+    let trials = 0;
+    const maxTrials = 5;
+
+    const colors = [
+      { word: "紅色", color: "blue", key: "l" },
+      { word: "藍色", color: "red", key: "a" },
+      { word: "綠色", color: "green", key: "s" }
+    ];
+
+    function showStimulus() {
+      const stimulus = colors[Math.floor(Math.random() * colors.length)];
+      stimulusEl.textContent = stimulus.word;
+      stimulusEl.style.color = stimulus.color;
+      currentColor = stimulus.color;
+      currentWord = stimulus.word;
+      expectedKey = stimulus.key;
+      startTime = Date.now();
+      isWaiting = true;
+      progressFill.style.transition = "none";
+      progressFill.style.width = "100%";
+      setTimeout(() => {
+        progressFill.style.transition = "width 2s linear";
+        progressFill.style.width = "0%";
+      }, 50);
+    }
+
+    function startStroopSequence() {
+      history = [];
+      trials = 0;
+      resultsEl.innerHTML = "";
+      messageEl.textContent = "請按顏色對應鍵：紅 (A)、藍 (L)、綠 (S)";
+      showStimulus();
+    }
+
+    function updateResults() {
+      if (history.length === 0) return;
+      let html = '<table><thead><tr><th>題次</th><th>文字</th><th>顏色</th><th>反應時間 (ms)</th><th>正確與否</th></tr></thead><tbody>';
+      history.forEach((h, i) => {
+        html += `<tr><td>${i + 1}</td><td>${h.word}</td><td>${h.color}</td><td>${h.rt}</td><td>${h.correct ? '✔️' : '❌'}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      const avg = Math.round(history.reduce((sum, h) => sum + h.rt, 0) / history.length);
+      html += `<p><strong>平均反應時間：</strong>${avg} 毫秒</p>`;
+      resultsEl.innerHTML = html;
+    }
+
+    function handleResponse(key) {
+      if (!isWaiting) return;
+      const rt = Date.now() - startTime;
+      const correct = key === expectedKey;
+
+      history.push({ word: currentWord, color: currentColor, rt, correct });
+      trials++;
+
+      if (trials < maxTrials) {
+        setTimeout(showStimulus, 800);
+      } else {
+        updateResults();
+      }
+
+      isWaiting = false;
+    }
+
+    window.addEventListener("keydown", (e) => handleResponse(e.key.toLowerCase()));
+  </script>
+</body>
+</html>

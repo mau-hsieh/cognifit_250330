@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>WCST 雛型任務</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      text-align: center;
+      padding-top: 30px;
+    }
+    #cards, #choices {
+      display: flex;
+      justify-content: center;
+      margin: 20px;
+    }
+    .card {
+      width: 80px;
+      height: 120px;
+      margin: 10px;
+      border: 2px solid #444;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    #message {
+      margin: 20px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>WCST（威斯康辛卡片分類測驗）雛型</h1>
+  <div id="targetCard" class="card" style="margin: 0 auto;"></div>
+  <div id="choices"></div>
+  <div id="message">請根據一個隱藏規則選擇正確的卡片（數量 / 顏色 / 形狀）</div>
+
+  <script>
+    const shapes = ['●', '■', '▲'];
+    const colors = ['red', 'blue', 'green'];
+    const counts = [1, 2, 3];
+
+    let currentRule = 'color'; // 'shape', 'color', 'count'
+    let correctCount = 0;
+    let totalTrials = 0;
+
+    const targetCard = document.getElementById('targetCard');
+    const choicesDiv = document.getElementById('choices');
+    const message = document.getElementById('message');
+
+    function randomElement(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateCard() {
+      return {
+        shape: randomElement(shapes),
+        color: randomElement(colors),
+        count: randomElement(counts)
+      };
+    }
+
+    function renderCard(card, container, onClick) {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.style.color = card.color;
+      el.innerHTML = card.shape.repeat(card.count);
+      el.onclick = onClick;
+      container.appendChild(el);
+      return el;
+    }
+
+    function renderTrial() {
+      choicesDiv.innerHTML = '';
+      const target = generateCard();
+      const options = [
+        generateCard(),
+        generateCard(),
+        generateCard(),
+        target // include the correct one based on rule
+      ];
+
+      // pick one of the options to match rule
+      const correctIndex = Math.floor(Math.random() * options.length);
+      options[correctIndex] = {
+        ...options[correctIndex],
+        [currentRule]: target[currentRule]
+      };
+
+      targetCard.style.color = target.color;
+      targetCard.innerHTML = target.shape.repeat(target.count);
+
+      options.forEach((opt, i) => {
+        renderCard(opt, choicesDiv, () => {
+          totalTrials++;
+          if (opt[currentRule] === target[currentRule]) {
+            correctCount++;
+            message.textContent = `✔️ 正確！連續正確 ${correctCount} 次`;
+            if (correctCount >= 3) {
+              switchRule();
+            }
+          } else {
+            message.textContent = `❌ 錯誤。請再嘗試。`;
+            correctCount = 0;
+          }
+          setTimeout(renderTrial, 800);
+        });
+      });
+    }
+
+    function switchRule() {
+      const rules = ['shape', 'color', 'count'];
+      const nextRules = rules.filter(r => r !== currentRule);
+      currentRule = randomElement(nextRules);
+      correctCount = 0;
+      message.textContent = `🔄 規則已變更！請重新推理。`;
+    }
+
+    renderTrial();
+  </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Go/No-Go Task</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      text-align: center;
+      padding-top: 60px;
+    }
+    #stimulus {
+      font-size: 80px;
+      margin: 40px;
+    }
+    #message {
+      font-size: 24px;
+      margin: 20px;
+    }
+    #result, #feedback {
+      font-size: 20px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      text-align: center;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #result {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #progressBar {
+      width: 300px;
+      height: 20px;
+      background-color: #ddd;
+      margin: 20px auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #progressFill {
+      height: 100%;
+      background-color: #4caf50;
+      width: 100%;
+      transition: width 1.5s linear;
+    }
+    button {
+      padding: 10px 25px;
+      font-size: 20px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Go/No-Go Task</h1>
+  <div id="message">按下「開始」開始任務</div>
+  <div id="stimulus"></div>
+  <div id="progressBar"><div id="progressFill"></div></div>
+  <button onclick="startTask()">開始</button>
+  <button onclick="manualResponse()">🖱️ 點擊反應（Go）</button>
+  <div id="feedback"></div>
+  <div id="result"></div>
+
+  <script>
+    let trials = [];
+    const totalTrials = 20;
+    let currentTrial = 0;
+    let startTime = 0;
+    let results = [];
+    let responseGiven = false;
+    let progressTimeout;
+    let autoNextTimeout;
+
+    function generateTrials() {
+      trials = [];
+      for (let i = 0; i < totalTrials; i++) {
+        const isGo = Math.random() < 0.7;
+        trials.push({
+          type: isGo ? 'go' : 'nogo',
+          stimulus: isGo ? '🔵' : '🔴',
+          correct: isGo
+        });
+      }
+    }
+
+    function startTask() {
+      generateTrials();
+      results = [];
+      currentTrial = 0;
+      document.getElementById("message").textContent = "請在看到 🔵 時按空白鍵或點擊按鈕，看到 🔴 時不要反應。";
+      document.getElementById("result").textContent = "";
+      document.getElementById("feedback").textContent = "";
+      nextTrial();
+    }
+
+    function nextTrial() {
+      if (currentTrial >= trials.length) {
+        const correctResponses = results.filter(r => r.correct).length;
+        const total = results.length;
+        const avgRT = Math.round(results.filter(r => r.rt !== null).reduce((a, b) => a + b.rt, 0) / results.filter(r => r.rt !== null).length || 0);
+        const numGo = trials.filter(t => t.type === 'go').length;
+        const numNoGo = trials.filter(t => t.type === 'nogo').length;
+        const hits = results.filter((r, i) => trials[i].type === 'go' && r.correct).length;
+        const falseAlarms = results.filter((r, i) => trials[i].type === 'nogo' && !r.correct).length;
+
+        const summary = `測驗結束！\n\n總題數：${total} 題\nGo 題數：${numGo}\nNo-Go 題數：${numNoGo}\n\n✔️ 正確反應次數：${correctResponses}\n❌ 誤擊（No-Go 時按下）：${falseAlarms}\n⏱️ 平均反應時間（限 Go 題）：${avgRT} ms`;
+        document.getElementById("message").textContent = "已完成測驗。";
+        document.getElementById("stimulus").textContent = "";
+        document.getElementById("result").textContent = summary;
+        return;
+      }
+
+      const trial = trials[currentTrial];
+      document.getElementById("stimulus").textContent = trial.stimulus;
+      document.getElementById("feedback").textContent = "";
+      startTime = Date.now();
+      responseGiven = false;
+
+      // Reset and animate progress bar
+      const progressFill = document.getElementById("progressFill");
+      progressFill.style.transition = "none";
+      progressFill.style.width = "100%";
+      setTimeout(() => {
+        progressFill.style.transition = "width 1.5s linear";
+        progressFill.style.width = "0%";
+      }, 50);
+
+      progressTimeout = setTimeout(() => {
+        if (!responseGiven) {
+          const correct = trial.type === 'nogo';
+          results.push({ rt: null, correct });
+          document.getElementById("feedback").textContent = correct ? "✅ 正確抑制" : "❌ 錯過應按";
+        }
+      }, 1500);
+
+      autoNextTimeout = setTimeout(() => {
+        currentTrial++;
+        nextTrial();
+      }, 2000);
+    }
+
+    function manualResponse() {
+      if (currentTrial < trials.length && !responseGiven) {
+        responseGiven = true;
+        clearTimeout(progressTimeout);
+        clearTimeout(autoNextTimeout);
+        const rt = Date.now() - startTime;
+        const trial = trials[currentTrial];
+        const correct = trial.type === 'go';
+        results.push({ rt, correct });
+        document.getElementById("feedback").textContent = correct ? `✅ 正確反應（${rt} ms）` : "❌ 不應反應";
+        setTimeout(() => {
+          currentTrial++;
+          nextTrial();
+        }, 500);
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && currentTrial < trials.length && !responseGiven) {
+        manualResponse();
+      }
+    });
+  </script>
+</body>
+</html>

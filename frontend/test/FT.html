@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>Flanker Test 原型</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #stimulus {
+      font-size: 48px;
+      margin: 20px;
+    }
+    #message {
+      margin: 20px;
+      font-size: 24px;
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin: 5px;
+    }
+    .response-buttons {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Flanker Test</h1>
+  <div id="message">按下「開始」以進行測驗</div>
+  <div id="stimulus"></div>
+  <button onclick="startTest()">開始</button>
+
+  <div class="response-buttons">
+    <button onclick="handleResponse('ArrowLeft')">⬅️ 左</button>
+    <button onclick="handleResponse('ArrowRight')">➡️ 右</button>
+  </div>
+
+  <script>
+    const trials = [
+      { type: 'congruent', arrows: '→→→→→', correct: 'ArrowRight' },
+      { type: 'congruent', arrows: '←←←←←', correct: 'ArrowLeft' },
+      { type: 'incongruent', arrows: '→→←→→', correct: 'ArrowLeft' },
+      { type: 'incongruent', arrows: '←←→←←', correct: 'ArrowRight' }
+    ];
+
+    let currentTrial = 0;
+    let startTime = 0;
+    let results = [];
+
+    function startTest() {
+      results = [];
+      currentTrial = 0;
+      document.querySelector("#message").textContent = "請看畫面，使用方向鍵或點擊按鈕作答";
+      nextTrial();
+    }
+
+    function nextTrial() {
+      if (currentTrial >= trials.length) {
+        const avgRT = Math.round(results.reduce((a, b) => a + b.rt, 0) / results.length);
+        const accuracy = Math.round((results.filter(r => r.correct).length / results.length) * 100);
+        document.querySelector("#message").textContent = `完成！平均反應時間：${avgRT} ms，正確率：${accuracy}%`;
+        document.querySelector("#stimulus").textContent = "";
+        return;
+      }
+      const trial = trials[currentTrial];
+      document.querySelector("#stimulus").textContent = trial.arrows;
+      startTime = Date.now();
+    }
+
+    function handleResponse(key) {
+      if (currentTrial >= trials.length) return;
+      const trial = trials[currentTrial];
+      const rt = Date.now() - startTime;
+      const correct = key === trial.correct;
+      results.push({ rt, correct });
+      currentTrial++;
+      nextTrial();
+    }
+
+    window.addEventListener('keydown', (e) => {
+      handleResponse(e.code);
+    });
+  </script>
+</body>
+</html>
