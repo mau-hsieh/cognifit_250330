@@ -95,3 +95,58 @@ iframe {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* dropdown 設計 */
+.navbar {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar > li {
+  position: relative;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #fff;
+  padding: 10px 14px;
+  display: block;
+  background-color: #4e54c8;
+  border-radius: 8px;
+}
+
+.navbar a:hover {
+  background-color: #6f75e3;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  list-style: none;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  min-width: 200px;
+  z-index: 1000;
+  padding: 5px 0;
+  border-radius: 8px;
+}
+
+.dropdown-menu li a {
+  color: #333;
+  padding: 10px 16px;
+  background-color: #fff;
+  border-radius: 0;
+}
+
+.dropdown-menu li a:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
